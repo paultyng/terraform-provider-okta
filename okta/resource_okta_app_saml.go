@@ -398,10 +398,6 @@ func resourceAppSamlCreate(ctx context.Context, d *schema.ResourceData, m interf
 	if err != nil {
 		return diag.Errorf("failed to create new certificate for SAML application: %v", err)
 	}
-	err = handleAppGroupsAndUsers(ctx, app.Id, d, m)
-	if err != nil {
-		return diag.Errorf("failed to handle groups and users for SAML application: %v", err)
-	}
 	err = handleAppLogo(ctx, d, m, app.Id, app.Links)
 	if err != nil {
 		return diag.Errorf("failed to upload logo for SAML application: %v", err)
@@ -469,10 +465,6 @@ func resourceAppSamlRead(ctx context.Context, d *schema.ResourceData, m interfac
 	} else {
 		_ = d.Set("saml_version", saml20)
 	}
-	err = syncGroupsAndUsers(ctx, app.Id, d, m)
-	if err != nil {
-		return diag.Errorf("failed to sync groups and users for SAML application: %v", err)
-	}
 	return nil
 }
 
@@ -499,10 +491,6 @@ func resourceAppSamlUpdate(ctx context.Context, d *schema.ResourceData, m interf
 		if err != nil {
 			return diag.Errorf("failed to create new certificate for SAML application: %v", err)
 		}
-	}
-	err = handleAppGroupsAndUsers(ctx, app.Id, d, m)
-	if err != nil {
-		return diag.Errorf("failed to handle groups and users for SAML application: %v", err)
 	}
 	if d.HasChange("logo") {
 		err = handleAppLogo(ctx, d, m, app.Id, app.Links)
