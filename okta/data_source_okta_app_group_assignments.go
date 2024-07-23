@@ -14,7 +14,7 @@ func dataSourceAppGroupAssignments() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceAppGroupAssignmentsRead,
 		Schema: map[string]*schema.Schema{
-			"id": {
+			"app_id": {
 				Type:        schema.TypeString,
 				Required:    true,
 				Description: "ID of the Okta App being queried for groups",
@@ -26,7 +26,7 @@ func dataSourceAppGroupAssignments() *schema.Resource {
 				Description: "List of groups IDs assigned to the app",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"id": {
+						"app_id": {
 							Type:        schema.TypeString,
 							Computed:    true,
 							Description: "Id of the group associated with the application",
@@ -52,18 +52,18 @@ func dataSourceAppGroupAssignments() *schema.Resource {
 
 func dataSourceAppGroupAssignmentsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := getOktaClientFromMetadata(m)
-	id := d.Get("id").(string)
+	appId := d.Get("app_id").(string)
 
-	groupAssignments, resp, err := client.Application.ListApplicationGroupAssignments(ctx, id, &query.Params{})
+	groupAssignments, resp, err := client.Application.ListApplicationGroupAssignments(ctx, appId, &query.Params{})
 	if err != nil {
-		return diag.Errorf("unable to query for groups from app (%s): %s", id, err)
+		return diag.Errorf("unable to query for groups from app (%s): %s", appId, err)
 	}
 
 	for resp.HasNextPage() {
 		var additionalGroups []*sdk.ApplicationGroupAssignment
 		resp, err = resp.Next(ctx, &additionalGroups)
 		if err != nil {
-			return diag.Errorf("unable to query for groups from app (%s): %s", id, err)
+			return diag.Errorf("unable to query for groups from app (%s): %s", appId, err)
 		}
 		groupAssignments = append(groupAssignments, additionalGroups...)
 	}
@@ -83,6 +83,6 @@ func dataSourceAppGroupAssignmentsRead(ctx context.Context, d *schema.ResourceDa
 	}
 
 	d.Set("groups", groups)
-	d.SetId(id)
+	d.SetId(appId)
 	return nil
 }
